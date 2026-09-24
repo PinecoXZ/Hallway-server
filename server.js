@@ -2,16 +2,16 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 // ─── Environment Variables ────────────────────────────────────────────────────
-// Set these in Render dashboard → Environment tab:
-//   ALLOWED_ORIGIN=https://hallwaychat.online,https://campuslink-taupe.vercel.app
+// Set these in Render/Railway dashboard → Environment tab:
+//   ALLOWED_ORIGIN=https://hallwaychat.online,http://localhost:3000
 //   NODE_ENV=production
-//   TURN_USERNAME=4d5a54a8f93a9a0f7e86fe4c
-//   TURN_CREDENTIAL=2IaEqXmvCzreIHOI
+//   TURN_USERNAME=your_turn_user
+//   TURN_CREDENTIAL=your_turn_credential
 
 // SECURITY: Support multiple allowed origins via comma-separated env var
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGIN
   ? process.env.ALLOWED_ORIGIN.split(",").map(o => o.trim())
-  : ["http://localhost:3000"];
+  : ["http://localhost:3000", "http://127.0.0.1:3000", "https://hallwaychat.online"];
 
 const NODE_ENV = process.env.NODE_ENV || "development";
 const PORT = process.env.PORT || 3001;
@@ -20,13 +20,6 @@ const TURN_USERNAME = process.env.TURN_USERNAME || "";
 const TURN_CREDENTIAL = process.env.TURN_CREDENTIAL || "";
 
 // ─── Input Validation ─────────────────────────────────────────────────────────
-const VALID_INTERESTS = [
-  "Computer Science", "Music", "Gaming", "Movies & TV", "Fitness",
-  "Art & Design", "Travel", "Study Buddies", "Photography", "Podcasts",
-  "Mental Health", "Foodie", "Astronomy", "Grad School", "Coffee Chat",
-  "Pets", "Outdoors", "Party Culture"
-];
-
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_INTERESTS = 10;
 const MAX_REASON_LENGTH = 100;
@@ -44,7 +37,9 @@ function sanitizeString(str, maxLength = 200) {
 function validateInterests(interests) {
   if (!Array.isArray(interests)) return [];
   return interests
-    .filter((i) => typeof i === "string" && VALID_INTERESTS.includes(i))
+    .filter((i) => typeof i === "string")
+    .map((i) => sanitizeString(i, 40))
+    .filter((i) => i.length > 0)
     .slice(0, MAX_INTERESTS);
 }
 
